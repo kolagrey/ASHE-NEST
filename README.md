@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://asheori.com/" target="blank"><img src="https://asheori.com/images/asheori-logo.png" width="320" alt="Asheori Logo" /></a>
+  <a href="https://asheori.com/" target="blank"><img src="https://asheori.com/images/asheori-logo.png" width="120" alt="Asheori Logo" /></a>
 </p>
 
 ## Description
