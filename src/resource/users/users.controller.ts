@@ -20,7 +20,15 @@ export class UsersController {
 
     @Get()
     async findAll(): Promise<UserResponse> {
+
         const result: UserResponse = await this.usersService.findAll();
+        return result;
+    }
+
+    @Get(':skip')
+    async findPaging(@Param('skip') skip: string): Promise<UserResponse> {
+
+        const result: UserResponse = await this.usersService.findPaging(parseInt(skip, 10));
         return result;
     }
 

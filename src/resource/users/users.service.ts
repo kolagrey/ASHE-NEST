@@ -27,7 +27,7 @@ export class UsersService {
                 hash,
             };
             const newUserSecurity = new this.userSecurityModel(userSecurity);
-            const newSecurityResult = await newUserSecurity.save();
+            await newUserSecurity.save();
             return {
                 result: newUserResult,
                 success: true,
@@ -43,6 +43,15 @@ export class UsersService {
 
     async findAll(): Promise<UserResponse> {
         const result: User[] = await this.userModel.find().exec();
+        return {
+            result,
+            success: result.length ? true : false,
+            message: result.length ? 'Resource retrieved successfully' : 'Resource not found',
+        };
+    }
+
+    async findPaging(skip: number): Promise<UserResponse> {
+        const result: User[] = await this.userModel.find().skip(skip).limit(20).exec();
         return {
             result,
             success: result.length ? true : false,
