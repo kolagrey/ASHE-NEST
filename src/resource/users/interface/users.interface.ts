@@ -8,6 +8,13 @@ export interface User {
     gender: string;
 }
 
+export interface UserSecurity {
+    email: string;
+    mobile: string;
+    salt: string;
+    hash: string;
+}
+
 export interface UserResponse {
     result?: User | User[];
     success: boolean;
