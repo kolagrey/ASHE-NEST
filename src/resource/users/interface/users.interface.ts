@@ -20,6 +20,12 @@ export interface UserAuthResponse {
     hash: string;
 }
 
+export interface AuthResponse {
+    token?: string;
+    success?: boolean;
+    message?: string;
+}
+
 export interface UserResponse {
     result?: User | User[];
     success: boolean;
