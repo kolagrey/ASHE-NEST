@@ -1,10 +1,10 @@
 <p align="center">
-  <a href="https://asheori.com/" target="blank"><img src="https://asheori.com/images/asheori-logo.png" width="120" alt="Asheori Logo" /></a>
+  <a href="https://asheori.com/" target="blank"><img src="https://asheori.com/images/asheori-logo.png" width="80" alt="Asheori Logo" /></a>
 </p>
 
 ## Description
 
-### ASHE Service - Build with NestJs.
+### ASHE Service - Built with NestJs.
 
 ## Installation
 
