@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { User, UserResponse, UserSecurity } from './interface/users.interface';
+import { User, UserResponse, UserSecurity, UserAuthResponse } from './interface/users.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserSecurityDto } from './dto/create-user-security.dts';
@@ -39,6 +39,14 @@ export class UsersService {
                 message: 'Unable to created user!',
             };
         }
+    }
+
+    async authenticate(email: string): Promise<UserAuthResponse> {
+        const { salt, hash } = await this.userSecurityModel.find({email}).exec();
+        return {
+            salt,
+            hash,
+        };
     }
 
     async findAll(): Promise<UserResponse> {

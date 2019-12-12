@@ -9,6 +9,11 @@ export const createUserSchema: Joi.ObjectSchema = Joi.object({
     gender: Joi.string().min(4).max(6).required(),
 });
 
+export const authUserSchema: Joi.ObjectSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().required(),
+});
+
 export const updateUserMobileSchema: Joi.ObjectSchema = Joi.object({
     mobile: Joi.string().min(11).max(11).required(),
 });

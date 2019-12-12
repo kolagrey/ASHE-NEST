@@ -15,6 +15,11 @@ export interface UserSecurity {
     hash: string;
 }
 
+export interface UserAuthResponse {
+    salt: string;
+    hash: string;
+}
+
 export interface UserResponse {
     result?: User | User[];
     success: boolean;
