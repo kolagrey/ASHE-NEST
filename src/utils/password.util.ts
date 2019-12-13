@@ -1,27 +1,33 @@
-import * as crypto from 'crypto';
+import bcrypt = require('bcrypt');
+import { tokenizer } from './tokenizer';
+import { config } from 'src/config';
 
-const genRandomString = (length: number) => {
-    return crypto.randomBytes(Math.ceil(length / 2))
-        .toString('hex')
-        .slice(0, length);
+export const createPIN = (): string => {
+    const baseConstant = 999999;
+    const generatedPIN = (Math.random() * baseConstant).toFixed(0);
+    return generatedPIN;
 };
 
-export const generatePIN = () => {
-    return (Math.random() * 999999).toFixed(0);
-};
-
-export const hashPassword = (password: string, salt: string) => {
-    const hash = crypto.createHmac('sha512', salt);
-    hash.update(password);
-    const hashed = hash.digest('hex');
-    return {
-        salt,
-        hashed,
+export const createToken = ({ email, password }) => {
+    const authenticateOptions = {
+        issuer: config.get('TOKEN_ISSUER'),
+        algorithm: 'RS256',
+        expiresIn: '24h',
     };
+    try {
+        const token = tokenizer.sign({ email, password }, authenticateOptions);
+        return Promise.resolve(token);
+    } catch (error) {
+        return Promise.reject(error);
+    }
 };
 
-export const saltHashPassword = (userPassword: string) => {
-    const salt = genRandomString(16);
-    const passwordData = hashPassword(userPassword, salt);
-    return { hash: passwordData.hashed, salt: passwordData.salt };
+export const createPasswordHash = async ({ password }) => {
+    const rounds = 10;
+    const hash = await bcrypt.hash(password, rounds);
+    return { hash };
+};
+
+export const comparePasswordHash = async ({ password, hash }) => {
+    return await bcrypt.compare(password, hash);
 };

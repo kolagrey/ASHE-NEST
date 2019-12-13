@@ -3,19 +3,18 @@ import * as mongoose from 'mongoose';
 export const UserSecuritySchema = new mongoose.Schema({
     email: {
         type: String,
+        index: true,
         lowercase: true,
-        require: true,
-        index: true,
-        unique: true,
+        required: true,
     },
-    mobile: {
+    hash: {
         type: String,
-        require: true,
-        index: true,
-        unique: true,
+        required: true,
     },
-    salt: String,
-    hash: String,
+    deleted: {
+        type: Boolean,
+        default: false,
+    },
     created: {
         type: Date,
         default: Date.now,

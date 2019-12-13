@@ -3,20 +3,20 @@ import { Request, Response } from 'express';
 import { UsersService } from '../users.service';
 
 @Injectable()
-export class CreateUserMiddleware implements NestMiddleware {
+export class BodyUpdateUserMiddleware implements NestMiddleware {
 
     constructor(private readonly usersService: UsersService) { }
     // tslint:disable-next-line:ban-types
     async use(req: Request, res: Response, next: Function) {
-        const { email, mobile } = req.body;
-        const result = await this.usersService.isUserWithEmailAndMobileExist(email, mobile);
+        const { email } = req.body;
+        const result = await this.usersService.isUserWithEmailExist(email);
         if (result) {
+            next();
+        } else {
             res.status(409).json({
                 success: false,
-                message: `${email} or ${mobile} already exist!`,
+                message: `An account with ${email} DOES NOT exist!`,
             });
-        } else {
-            next();
         }
     }
 }

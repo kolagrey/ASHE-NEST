@@ -28,6 +28,7 @@ export class ConfigService {
                 .default('development'),
             SERVICE_PORT: Joi.number().default(3000),
             API_AUTH_ENABLED: Joi.boolean().required(),
+            TOKEN_ISSUER: Joi.string().required(),
         });
 
         const { error, value: validatedEnvConfig } = envVarsSchema.validate(

@@ -1,12 +1,17 @@
 import { Controller, Get, Post, Body, Param, Patch, UsePipes } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UserResponse, UserAuthResponse, AuthResponse } from './interface/users.interface';
+import { UserResponse, AuthResponse, GenericResponse } from './interface/users.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateDisplaynameDto } from './dto/update-displayname.dto';
 import { UpdateMobileDto } from './dto/update-mobile.dto';
-import { createUserSchema, updateUserMobileSchema, updateUserDisplaynameSchema, authUserSchema } from './schemas/user.joi.schema';
+import {
+    createUserSchema, updateUserMobileSchema,
+    updateUserDisplaynameSchema, authUserSchema, resetPasswordSchema,
+} from './schemas/user.joi.schema';
 import { PayloadValidationPipe } from 'src/pipe/payload-validation.pipe';
 import { UserAuthCredentialDto } from './dto/user-auth-cred.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -23,19 +28,12 @@ export class UsersController {
     @UsePipes(new PayloadValidationPipe(authUserSchema))
     async authenticate(@Body() payload: UserAuthCredentialDto): Promise<AuthResponse> {
         const { email, password } = payload;
-        const { isAuthenticated } = await this.usersService.authenticate(email, password);
-        if (isAuthenticated) {
-            return {
-                token: null,
-                success: true,
-                message: 'Login successful',
-            };
-        } else {
-            return {
-                success: false,
-                message: 'Login NOT successful',
-            };
-        }
+        const { isAuthenticated, token, message } = await this.usersService.authenticate(email, password);
+        return {
+            token,
+            message,
+            success: isAuthenticated,
+        };
     }
 
     @Get()
@@ -71,6 +69,22 @@ export class UsersController {
     async updateDisplayname(@Param('email') email: string, @Body() payload: UpdateDisplaynameDto): Promise<UserResponse> {
         const { displayname } = payload;
         const result: UserResponse = await this.usersService.updateDisplayname(email, displayname);
+        return result;
+    }
+
+    @Patch('password/reset')
+    @UsePipes(new PayloadValidationPipe(resetPasswordSchema))
+    async resetPassword(@Body() payload: ResetPasswordDto): Promise<GenericResponse> {
+        const { email } = payload;
+        const result: GenericResponse = await this.usersService.resetPassword(email);
+        return result;
+    }
+
+    @Patch('password/update')
+    @UsePipes(new PayloadValidationPipe(authUserSchema))
+    async updatePassword(@Body() payload: UpdatePasswordDto): Promise<GenericResponse> {
+        const { email, password } = payload;
+        const result: UserResponse = await this.usersService.updatePassword(email, password);
         return result;
     }
 }

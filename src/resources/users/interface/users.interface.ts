@@ -15,8 +15,16 @@ export interface UserSecurity {
     hash: string;
 }
 
+export interface GenericResponse {
+    result?: any;
+    success?: boolean;
+    message?: string;
+}
+
 export interface UserAuthResponse {
     isAuthenticated: boolean;
+    token?: string;
+    message?: string;
 }
 
 export interface AuthResponse {

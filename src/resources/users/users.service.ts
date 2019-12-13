@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { User, UserResponse, UserSecurity, UserAuthResponse } from './interface/users.interface';
+import { User, UserResponse, UserSecurity, UserAuthResponse, GenericResponse } from './interface/users.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserSecurityDto } from './dto/create-user-security.dts';
-import { saltHashPassword, generatePIN, hashPassword } from 'src/utils/password.util';
+import { createPIN, createPasswordHash, comparePasswordHash, createToken } from 'src/utils/password.util';
 
 @Injectable()
 export class UsersService {
@@ -17,13 +17,11 @@ export class UsersService {
         const newUserResult = await newUser.save();
 
         if (newUserResult) {
-            const { email, mobile } = user;
-            const password = generatePIN();
-            const { salt, hash } = saltHashPassword(password);
+            const { email } = user;
+            const password = createPIN();
+            const { hash } = await createPasswordHash({ password });
             const userSecurity: CreateUserSecurityDto = {
                 email,
-                mobile,
-                salt,
                 hash,
             };
             const newUserSecurity = new this.userSecurityModel(userSecurity);
@@ -42,17 +40,35 @@ export class UsersService {
     }
 
     async authenticate(email: string, password: string): Promise<UserAuthResponse> {
-        const { salt, hash } = await this.userSecurityModel.find({email}).exec();
-        if (salt && hash) {
-            const encryptedPassword = hashPassword(password, salt);
-            return {
-                isAuthenticated: encryptedPassword.hashed === hash,
-            };
-        } else {
-            return {
-                isAuthenticated: false,
-            };
-        }
+        const result = await this.userSecurityModel.findOne({ email }).exec();
+        const { hash } = result || { hash: '' };
+        const hasValidHash = await comparePasswordHash({ password, hash });
+        const token = await createToken({ email, password });
+        return {
+            isAuthenticated: hasValidHash ? true : false,
+            token: hasValidHash ? token : null,
+            message: hasValidHash ? 'Login succeed' : 'Login failed!',
+        };
+    }
+
+    async updatePassword(email: string, password: string): Promise<UserResponse> {
+        const { hash } = await createPasswordHash({ password });
+        await this.userSecurityModel.findOneAndUpdate({ email }, { hash }).exec();
+        return {
+            success: true,
+            message: 'Resource updated successfully',
+        };
+    }
+
+    async resetPassword(email: string): Promise<GenericResponse> {
+        const password = createPIN();
+        const { hash } = await createPasswordHash({ password });
+        await this.userSecurityModel.findOneAndUpdate({ email }, { hash }).exec();
+        return {
+            result: password,
+            success: true,
+            message: 'Resource updated successfully',
+        };
     }
 
     async findAll(): Promise<UserResponse> {
@@ -82,8 +98,16 @@ export class UsersService {
         };
     }
 
-    async isUserWithEmailAndMobileExist(email: string, mobile: string): Promise<boolean> {
-        const result = await this.userModel.findOne({ email, mobile }).exec();
+    async isUserWithEmailExist(email: string): Promise<boolean> {
+        const result = await this.userModel.findOne({ email }).exec();
+        if (result) {
+            return true;
+        }
+        return false;
+    }
+
+    async isSecurityWithEmailExist(email: string): Promise<boolean> {
+        const result = await this.userSecurityModel.findOne({ email }).exec();
         if (result) {
             return true;
         }
