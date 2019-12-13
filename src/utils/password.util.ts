@@ -1,4 +1,4 @@
-import bcrypt = require('bcrypt');
+import * as bcrypt from 'bcrypt';
 import { tokenizer } from './tokenizer';
 import { config } from 'src/config';
 
