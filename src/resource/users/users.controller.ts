@@ -6,8 +6,7 @@ import { UpdateDisplaynameDto } from './dto/update-displayname.dto';
 import { UpdateMobileDto } from './dto/update-mobile.dto';
 import { createUserSchema, updateUserMobileSchema, updateUserDisplaynameSchema, authUserSchema } from './schemas/user.joi.schema';
 import { PayloadValidationPipe } from 'src/pipe/payload-validation.pipe';
-import { hashPassword } from 'src/utils/password.util';
-import { UserAuthDto } from './dto/auth-user.dto';
+import { UserAuthCredentialDto } from './dto/user-auth-cred.dto';
 
 @Controller('users')
 export class UsersController {
@@ -15,38 +14,28 @@ export class UsersController {
 
     @Post()
     @UsePipes(new PayloadValidationPipe(createUserSchema))
-    async create(@Body() createUserDto: CreateUserDto): Promise<UserResponse> {
-        const response: UserResponse = await this.usersService.create(createUserDto);
+    async create(@Body() payload: CreateUserDto): Promise<UserResponse> {
+        const response: UserResponse = await this.usersService.create(payload);
         return response;
     }
 
     @Post('authenticate')
     @UsePipes(new PayloadValidationPipe(authUserSchema))
-    async authenticate(@Body() authUserDto: UserAuthDto): Promise<AuthResponse> {
-        const { email, password } = authUserDto;
-        const response: UserAuthResponse = await this.usersService.authenticate(email);
-        const { salt, hash } = response;
-        if (salt && hash) {
-            const encryptedPassword = hashPassword(password, salt);
-            if (encryptedPassword.hashed === hash) {
-                return {
-                    token: null,
-                    success: true,
-                    message: 'Login successful',
-                };
-            } else {
-                return {
-                    success: false,
-                    message: 'Login NOT successful',
-                };
-            }
+    async authenticate(@Body() payload: UserAuthCredentialDto): Promise<AuthResponse> {
+        const { email, password } = payload;
+        const { isAuthenticated } = await this.usersService.authenticate(email, password);
+        if (isAuthenticated) {
+            return {
+                token: null,
+                success: true,
+                message: 'Login successful',
+            };
         } else {
             return {
                 success: false,
                 message: 'Login NOT successful',
             };
         }
-
     }
 
     @Get()

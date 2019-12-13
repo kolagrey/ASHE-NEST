@@ -4,7 +4,7 @@ import { User, UserResponse, UserSecurity, UserAuthResponse } from './interface/
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserSecurityDto } from './dto/create-user-security.dts';
-import { saltHashPassword, generatePIN } from 'src/utils/password.util';
+import { saltHashPassword, generatePIN, hashPassword } from 'src/utils/password.util';
 
 @Injectable()
 export class UsersService {
@@ -41,12 +41,18 @@ export class UsersService {
         }
     }
 
-    async authenticate(email: string): Promise<UserAuthResponse> {
+    async authenticate(email: string, password: string): Promise<UserAuthResponse> {
         const { salt, hash } = await this.userSecurityModel.find({email}).exec();
-        return {
-            salt,
-            hash,
-        };
+        if (salt && hash) {
+            const encryptedPassword = hashPassword(password, salt);
+            return {
+                isAuthenticated: encryptedPassword.hashed === hash,
+            };
+        } else {
+            return {
+                isAuthenticated: false,
+            };
+        }
     }
 
     async findAll(): Promise<UserResponse> {

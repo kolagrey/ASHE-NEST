@@ -16,8 +16,7 @@ export interface UserSecurity {
 }
 
 export interface UserAuthResponse {
-    salt: string;
-    hash: string;
+    isAuthenticated: boolean;
 }
 
 export interface AuthResponse {
