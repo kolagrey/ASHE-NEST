@@ -38,14 +38,12 @@ export class UsersController {
 
     @Get()
     async findAll(): Promise<IUserResponse> {
-
         const result: IUserResponse = await this.usersService.findAll();
         return result;
     }
 
     @Get(':skip')
     async findPaging(@Param('skip') skip: string): Promise<IUserResponse> {
-
         const result: IUserResponse = await this.usersService.findPaging(parseInt(skip, 10));
         return result;
     }

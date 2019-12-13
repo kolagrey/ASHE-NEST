@@ -12,7 +12,6 @@ export class UsersService {
                 @InjectModel('UserSecurity') private readonly userSecurityModel: Model<IUserSecurity>) { }
 
     async create(user: CreateUserDto): Promise<IUserResponse> {
-
         const newUser = new this.userModel(user);
         const newUserResult = await newUser.save();
 

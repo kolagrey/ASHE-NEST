@@ -9,7 +9,6 @@ export class FeedService {
     constructor(@InjectModel('Feed') private readonly feedModel: Model<IFeed>) { }
 
     async create(feed: CreateFeedDto): Promise<IFeedResponse> {
-
         const newFeed = new this.feedModel(feed);
         const result = await newFeed.save();
         return {

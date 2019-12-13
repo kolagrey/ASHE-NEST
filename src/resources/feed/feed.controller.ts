@@ -19,14 +19,12 @@ export class FeedController {
 
     @Get()
     async findAll(): Promise<IFeedResponse> {
-
         const result: IFeedResponse = await this.feedService.findAll();
         return result;
     }
 
     @Get(':skip')
     async findPaging(@Param('skip') skip: string): Promise<IFeedResponse> {
-
         const result: IFeedResponse = await this.feedService.findPaging(parseInt(skip, 10));
         return result;
     }
