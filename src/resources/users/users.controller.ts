@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, Patch, UsePipes } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UserResponse, AuthResponse, GenericResponse } from './interface/users.interface';
+import { IUserResponse, IAuthResponse, IGenericResponse } from './interface/users.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateDisplaynameDto } from './dto/update-displayname.dto';
 import { UpdateMobileDto } from './dto/update-mobile.dto';
@@ -19,14 +19,14 @@ export class UsersController {
 
     @Post()
     @UsePipes(new PayloadValidationPipe(createUserSchema))
-    async create(@Body() payload: CreateUserDto): Promise<UserResponse> {
-        const response: UserResponse = await this.usersService.create(payload);
+    async create(@Body() payload: CreateUserDto): Promise<IUserResponse> {
+        const response: IUserResponse = await this.usersService.create(payload);
         return response;
     }
 
     @Post('authenticate')
     @UsePipes(new PayloadValidationPipe(authUserSchema))
-    async authenticate(@Body() payload: UserAuthCredentialDto): Promise<AuthResponse> {
+    async authenticate(@Body() payload: UserAuthCredentialDto): Promise<IAuthResponse> {
         const { email, password } = payload;
         const { isAuthenticated, token, message } = await this.usersService.authenticate(email, password);
         return {
@@ -37,54 +37,54 @@ export class UsersController {
     }
 
     @Get()
-    async findAll(): Promise<UserResponse> {
+    async findAll(): Promise<IUserResponse> {
 
-        const result: UserResponse = await this.usersService.findAll();
+        const result: IUserResponse = await this.usersService.findAll();
         return result;
     }
 
     @Get(':skip')
-    async findPaging(@Param('skip') skip: string): Promise<UserResponse> {
+    async findPaging(@Param('skip') skip: string): Promise<IUserResponse> {
 
-        const result: UserResponse = await this.usersService.findPaging(parseInt(skip, 10));
+        const result: IUserResponse = await this.usersService.findPaging(parseInt(skip, 10));
         return result;
     }
 
     @Get(':email')
-    async findOneByEmail(@Param('email') email: string): Promise<UserResponse> {
-        const result: UserResponse = await this.usersService.findOneByEmail(email);
+    async findOneByEmail(@Param('email') email: string): Promise<IUserResponse> {
+        const result: IUserResponse = await this.usersService.findOneByEmail(email);
         return result;
     }
 
     @Patch('mobile/:email')
     @UsePipes(new PayloadValidationPipe(updateUserMobileSchema))
-    async updateMobile(@Param('email') email: string, @Body() payload: UpdateMobileDto): Promise<UserResponse> {
+    async updateMobile(@Param('email') email: string, @Body() payload: UpdateMobileDto): Promise<IUserResponse> {
         const { mobile } = payload;
-        const result: UserResponse = await this.usersService.updateMobile(email, mobile);
+        const result: IUserResponse = await this.usersService.updateMobile(email, mobile);
         return result;
     }
 
     @Patch('displayname/:email')
     @UsePipes(new PayloadValidationPipe(updateUserDisplaynameSchema))
-    async updateDisplayname(@Param('email') email: string, @Body() payload: UpdateDisplaynameDto): Promise<UserResponse> {
+    async updateDisplayname(@Param('email') email: string, @Body() payload: UpdateDisplaynameDto): Promise<IUserResponse> {
         const { displayname } = payload;
-        const result: UserResponse = await this.usersService.updateDisplayname(email, displayname);
+        const result: IUserResponse = await this.usersService.updateDisplayname(email, displayname);
         return result;
     }
 
     @Patch('password/reset')
     @UsePipes(new PayloadValidationPipe(resetPasswordSchema))
-    async resetPassword(@Body() payload: ResetPasswordDto): Promise<GenericResponse> {
+    async resetPassword(@Body() payload: ResetPasswordDto): Promise<IGenericResponse> {
         const { email } = payload;
-        const result: GenericResponse = await this.usersService.resetPassword(email);
+        const result: IGenericResponse = await this.usersService.resetPassword(email);
         return result;
     }
 
     @Patch('password/update')
     @UsePipes(new PayloadValidationPipe(authUserSchema))
-    async updatePassword(@Body() payload: UpdatePasswordDto): Promise<GenericResponse> {
+    async updatePassword(@Body() payload: UpdatePasswordDto): Promise<IGenericResponse> {
         const { email, password } = payload;
-        const result: UserResponse = await this.usersService.updatePassword(email, password);
+        const result: IUserResponse = await this.usersService.updatePassword(email, password);
         return result;
     }
 }

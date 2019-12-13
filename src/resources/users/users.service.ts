@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { User, UserResponse, UserSecurity, UserAuthResponse, GenericResponse } from './interface/users.interface';
+import { IUser, IUserResponse, IUserSecurity, IUserAuthResponse, IGenericResponse } from './interface/users.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserSecurityDto } from './dto/create-user-security.dts';
@@ -8,10 +8,10 @@ import { createPIN, createPasswordHash, comparePasswordHash, createToken } from 
 
 @Injectable()
 export class UsersService {
-    constructor(@InjectModel('User') private readonly userModel: Model<User>,
-                @InjectModel('UserSecurity') private readonly userSecurityModel: Model<UserSecurity>) { }
+    constructor(@InjectModel('User') private readonly userModel: Model<IUser>,
+                @InjectModel('UserSecurity') private readonly userSecurityModel: Model<IUserSecurity>) { }
 
-    async create(user: CreateUserDto): Promise<UserResponse> {
+    async create(user: CreateUserDto): Promise<IUserResponse> {
 
         const newUser = new this.userModel(user);
         const newUserResult = await newUser.save();
@@ -39,7 +39,7 @@ export class UsersService {
         }
     }
 
-    async authenticate(email: string, password: string): Promise<UserAuthResponse> {
+    async authenticate(email: string, password: string): Promise<IUserAuthResponse> {
         const result = await this.userSecurityModel.findOne({ email }).exec();
         const { hash } = result || { hash: '' };
         const hasValidHash = await comparePasswordHash({ password, hash });
@@ -51,7 +51,7 @@ export class UsersService {
         };
     }
 
-    async updatePassword(email: string, password: string): Promise<UserResponse> {
+    async updatePassword(email: string, password: string): Promise<IUserResponse> {
         const { hash } = await createPasswordHash({ password });
         await this.userSecurityModel.findOneAndUpdate({ email }, { hash }).exec();
         return {
@@ -60,7 +60,7 @@ export class UsersService {
         };
     }
 
-    async resetPassword(email: string): Promise<GenericResponse> {
+    async resetPassword(email: string): Promise<IGenericResponse> {
         const password = createPIN();
         const { hash } = await createPasswordHash({ password });
         await this.userSecurityModel.findOneAndUpdate({ email }, { hash }).exec();
@@ -71,8 +71,8 @@ export class UsersService {
         };
     }
 
-    async findAll(): Promise<UserResponse> {
-        const result: User[] = await this.userModel.find().exec();
+    async findAll(): Promise<IUserResponse> {
+        const result: IUser[] = await this.userModel.find().exec();
         return {
             result,
             success: result.length ? true : false,
@@ -80,8 +80,8 @@ export class UsersService {
         };
     }
 
-    async findPaging(skip: number): Promise<UserResponse> {
-        const result: User[] = await this.userModel.find().skip(skip).limit(20).exec();
+    async findPaging(skip: number): Promise<IUserResponse> {
+        const result: IUser[] = await this.userModel.find().skip(skip).limit(20).exec();
         return {
             result,
             success: result.length ? true : false,
@@ -89,7 +89,7 @@ export class UsersService {
         };
     }
 
-    async findOneByEmail(email: string): Promise<UserResponse> {
+    async findOneByEmail(email: string): Promise<IUserResponse> {
         const result = await this.userModel.findOne({ email }).exec();
         return {
             result: result ? result : {},
@@ -114,7 +114,7 @@ export class UsersService {
         return false;
     }
 
-    async updateMobile(email: string, mobile: string): Promise<UserResponse> {
+    async updateMobile(email: string, mobile: string): Promise<IUserResponse> {
         const result = await this.userModel.findOneAndUpdate({ email }, { mobile }, { new: true }).exec();
         return {
             result,
@@ -123,7 +123,7 @@ export class UsersService {
         };
     }
 
-    async updateDisplayname(email: string, displayname: string): Promise<UserResponse> {
+    async updateDisplayname(email: string, displayname: string): Promise<IUserResponse> {
         const result = await this.userModel.findOneAndUpdate({ email }, { displayname }, { new: true }).exec();
         return {
             result,

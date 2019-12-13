@@ -1,40 +1,41 @@
-export interface User {
+export interface IUser {
     _id?: string;
     firstname: string;
     lastname: string;
-    displayname: string;
     email: string;
-    mobile: string;
-    gender: string;
+    displayname?: string;
+    mobile?: string;
+    gender?: string;
+    avatar?: string;
 }
 
-export interface UserSecurity {
+export interface IUserSecurity {
     email: string;
     mobile: string;
     salt: string;
     hash: string;
 }
 
-export interface GenericResponse {
+export interface IGenericResponse {
     result?: any;
     success?: boolean;
     message?: string;
 }
 
-export interface UserAuthResponse {
+export interface IUserAuthResponse {
     isAuthenticated: boolean;
     token?: string;
     message?: string;
 }
 
-export interface AuthResponse {
+export interface IAuthResponse {
     token?: string;
     success?: boolean;
     message?: string;
 }
 
-export interface UserResponse {
-    result?: User | User[];
+export interface IUserResponse {
+    result?: IUser | IUser[];
     success: boolean;
     message: string;
 }

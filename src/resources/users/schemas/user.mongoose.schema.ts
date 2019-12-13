@@ -26,8 +26,10 @@ export const UserSchema = new mongoose.Schema({
     },
     mobile: {
         type: String,
-        require: true,
-        index: true,
-        unique: true,
+        default: '',
+    },
+    avatar: {
+        type: String,
+        default: '',
     },
 });
