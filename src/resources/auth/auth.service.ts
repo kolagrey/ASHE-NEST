@@ -4,11 +4,42 @@ import { Model } from 'mongoose';
 import { IUserSecurity, IUserAuthResponse, IGenericResponse } from './interface/auth.interface';
 import { comparePasswordHash, createToken, createPasswordHash, createPIN } from 'src/utils/password.util';
 import { messageConstants } from 'src/constants';
-import { IUserResponse } from '../users/interface/users.interface';
+import { IUserResponse, IUser } from '../users/interface/users.interface';
+import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserSecurityDto } from './dto/create-user-security.dts';
 
 @Injectable()
 export class AuthService {
-    constructor(@InjectModel('UserSecurity') private readonly userSecurityModel: Model<IUserSecurity>) { }
+    constructor(@InjectModel('UserSecurity') private readonly userSecurityModel: Model<IUserSecurity>,
+                @InjectModel('User') private readonly userModel: Model<IUser>) { }
+
+    async create(user: CreateUserDto): Promise<IUserResponse> {
+        const newUser = new this.userModel(user);
+        try {
+            const newUserResult = await newUser.save();
+            const { email } = user;
+            const password = createPIN();
+            const { hash } = await createPasswordHash({ password });
+            const userSecurity: CreateUserSecurityDto = {
+                email,
+                hash,
+            };
+            try {
+                const newUserSecurity = new this.userSecurityModel(userSecurity);
+                await newUserSecurity.save();
+                return {
+                    result: newUserResult,
+                    success: true,
+                    message: messageConstants.REGISTRATION_SUCCESS,
+                };
+            } catch (error) {
+                throw new BadRequestException(error);
+            }
+        } catch (error) {
+            throw new BadRequestException(messageConstants.REGISTRATION_FAILED);
+        }
+
+    }
 
     async authenticate(email: string, password: string): Promise<IUserAuthResponse> {
         const result = await this.userSecurityModel.findOne({ email }).exec();

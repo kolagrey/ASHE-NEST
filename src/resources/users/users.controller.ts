@@ -1,12 +1,11 @@
-import { Controller, Get, Post, Body, Param, Patch, UsePipes, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Body, Param, Patch, UsePipes, BadRequestException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { UsersService } from './users.service';
 import { IUserResponse } from './interface/users.interface';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateDisplaynameDto } from './dto/update-displayname.dto';
 import { UpdateMobileDto } from './dto/update-mobile.dto';
 import {
-    createUserSchema, updateUserMobileSchema,
+    updateUserMobileSchema,
     updateUserDisplaynameSchema,
 } from './schemas/user.joi.schema';
 import { PayloadValidationPipe } from 'src/pipe/payload-validation.pipe';
@@ -15,13 +14,6 @@ import { messageConstants } from 'src/constants';
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) { }
-
-    @Post()
-    @UsePipes(new PayloadValidationPipe(createUserSchema))
-    async create(@Body() payload: CreateUserDto): Promise<IUserResponse> {
-        const response: IUserResponse = await this.usersService.create(payload);
-        return response;
-    }
 
     @Get()
     async findAll(): Promise<IUserResponse> {
