@@ -30,10 +30,19 @@ export const messageConstants = {
     PROJECT_CREATION_FAILED: 'Project order was created successfully',
     ORDER_CREATION_FAILED: 'Unable to create project order',
     GENERIC: 'Task successful',
+    VALIDATION_FAILED: 'Validation failed',
 };
 
 export const requestConstants = {
     BODY: 'body',
     PARAMS: 'params',
     QUERY: 'query',
+};
+
+export const tokenConstants = {
+    HASH_ROUND: 10,
+    BASE_CONSTANT: 999999,
+    TOKEN_ALGO: 'RS256',
+    TOKEN_TIME: '24h',
+    TOKEN_ISSUER: 'TOKEN_ISSUER',
 };

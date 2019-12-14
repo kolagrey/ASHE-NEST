@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Param, Patch, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, UsePipes, BadRequestException } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { UsersService } from './users.service';
 import { IUserResponse, IAuthResponse, IGenericResponse } from './interface/users.interface';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -12,6 +13,7 @@ import { PayloadValidationPipe } from 'src/pipe/payload-validation.pipe';
 import { UserAuthCredentialDto } from './dto/user-auth-cred.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { messageConstants } from 'src/constants';
 
 @Controller('users')
 export class UsersController {
@@ -42,32 +44,48 @@ export class UsersController {
         return result;
     }
 
-    @Get(':skip')
+    @Get('paging/:skip')
     async findPaging(@Param('skip') skip: string): Promise<IUserResponse> {
-        const result: IUserResponse = await this.usersService.findPaging(parseInt(skip, 10));
+        const skipValue: number = parseInt(skip, 10) || 0;
+        const result: IUserResponse = await this.usersService.findPaging(skipValue);
         return result;
     }
 
-    @Get(':email')
-    async findOneByEmail(@Param('email') email: string): Promise<IUserResponse> {
-        const result: IUserResponse = await this.usersService.findOneByEmail(email);
-        return result;
+    @Get(':id')
+    async findOneById(@Param('id') id: string): Promise<IUserResponse> {
+        try {
+            const userId = Types.ObjectId(id);
+            const result: IUserResponse = await this.usersService.findOneById(userId);
+            return result;
+        } catch {
+            throw new BadRequestException(messageConstants.INVALID_PARAMS);
+        }
     }
 
-    @Patch('mobile/:email')
+    @Patch('mobile/:id')
     @UsePipes(new PayloadValidationPipe(updateUserMobileSchema))
-    async updateMobile(@Param('email') email: string, @Body() payload: UpdateMobileDto): Promise<IUserResponse> {
-        const { mobile } = payload;
-        const result: IUserResponse = await this.usersService.updateMobile(email, mobile);
-        return result;
+    async updateMobile(@Param('id') id: string, @Body() payload: UpdateMobileDto): Promise<IUserResponse> {
+        try {
+            const { mobile } = payload;
+            const userId = Types.ObjectId(id);
+            const result: IUserResponse = await this.usersService.updateMobile(userId, mobile);
+            return result;
+        } catch {
+            throw new BadRequestException(messageConstants.INVALID_PARAMS);
+        }
     }
 
-    @Patch('displayname/:email')
+    @Patch('displayname/:id')
     @UsePipes(new PayloadValidationPipe(updateUserDisplaynameSchema))
-    async updateDisplayname(@Param('email') email: string, @Body() payload: UpdateDisplaynameDto): Promise<IUserResponse> {
-        const { displayname } = payload;
-        const result: IUserResponse = await this.usersService.updateDisplayname(email, displayname);
-        return result;
+    async updateDisplayname(@Param('id') id: string, @Body() payload: UpdateDisplaynameDto): Promise<IUserResponse> {
+        try {
+            const { displayname } = payload;
+            const userId = Types.ObjectId(id);
+            const result: IUserResponse = await this.usersService.updateDisplayname(userId, displayname);
+            return result;
+        } catch {
+            throw new BadRequestException(messageConstants.INVALID_PARAMS);
+        }
     }
 
     @Patch('password/reset')

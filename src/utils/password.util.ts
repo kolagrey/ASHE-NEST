@@ -1,18 +1,19 @@
 import * as bcrypt from 'bcrypt';
 import { tokenizer } from './tokenizer';
 import { config } from 'src/config';
+import { tokenConstants } from 'src/constants';
 
 export const createPIN = (): string => {
-    const baseConstant = 999999;
+    const baseConstant = tokenConstants.BASE_CONSTANT;
     const generatedPIN = (Math.random() * baseConstant).toFixed(0);
     return generatedPIN;
 };
 
 export const createToken = ({ email, password }) => {
     const authenticateOptions = {
-        issuer: config.get('TOKEN_ISSUER'),
-        algorithm: 'RS256',
-        expiresIn: '24h',
+        issuer: config.get(tokenConstants.TOKEN_ISSUER),
+        algorithm: tokenConstants.TOKEN_ALGO,
+        expiresIn: tokenConstants.TOKEN_TIME,
     };
     try {
         const token = tokenizer.sign({ email, password }, authenticateOptions);
@@ -23,8 +24,7 @@ export const createToken = ({ email, password }) => {
 };
 
 export const createPasswordHash = async ({ password }) => {
-    const rounds = 10;
-    const hash = await bcrypt.hash(password, rounds);
+    const hash = await bcrypt.hash(password, tokenConstants.HASH_ROUND);
     return { hash };
 };
 

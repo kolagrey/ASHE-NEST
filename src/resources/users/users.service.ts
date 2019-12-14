@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { IUser, IUserResponse, IUserSecurity, IUserAuthResponse, IGenericResponse } from './interface/users.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -88,6 +88,15 @@ export class UsersService {
         };
     }
 
+    async findOneById(id: Types.ObjectId): Promise<IUserResponse> {
+        const result = await this.userModel.findOne({ _id: id }).exec();
+        return {
+            result: result ? result : {},
+            success: result ? true : false,
+            message: result ? 'Resource retrieved successfully' : 'Resource not found',
+        };
+    }
+
     async findOneByEmail(email: string): Promise<IUserResponse> {
         const result = await this.userModel.findOne({ email }).exec();
         return {
@@ -113,8 +122,8 @@ export class UsersService {
         return false;
     }
 
-    async updateMobile(email: string, mobile: string): Promise<IUserResponse> {
-        const result = await this.userModel.findOneAndUpdate({ email }, { mobile }, { new: true }).exec();
+    async updateMobile(id: Types.ObjectId, mobile: string): Promise<IUserResponse> {
+        const result = await this.userModel.findOneAndUpdate({ _id: id }, { mobile }, { new: true }).exec();
         return {
             result,
             success: true,
@@ -122,8 +131,8 @@ export class UsersService {
         };
     }
 
-    async updateDisplayname(email: string, displayname: string): Promise<IUserResponse> {
-        const result = await this.userModel.findOneAndUpdate({ email }, { displayname }, { new: true }).exec();
+    async updateDisplayname(id: Types.ObjectId, displayname: string): Promise<IUserResponse> {
+        const result = await this.userModel.findOneAndUpdate({ _id: id }, { displayname }, { new: true }).exec();
         return {
             result,
             success: true,

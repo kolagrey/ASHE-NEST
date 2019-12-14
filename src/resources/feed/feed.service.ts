@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { IFeed, IFeedResponse, IFeedUpdate } from './interface/feed.interface';
 import { CreateFeedDto } from './dto/create-feed.dto';
@@ -36,7 +36,7 @@ export class FeedService {
         };
     }
 
-    async findOneById(id: string): Promise<IFeedResponse> {
+    async findOneById(id: Types.ObjectId): Promise<IFeedResponse> {
         const result = await this.feedModel.findOne({ _id: id }).exec();
         return {
             result: result ? result : {},
@@ -45,7 +45,7 @@ export class FeedService {
         };
     }
 
-    async updateFeed(id: string, payload: IFeedUpdate): Promise<IFeedResponse> {
+    async updateFeed(id: Types.ObjectId, payload: IFeedUpdate): Promise<IFeedResponse> {
         const { title, body, tag } = payload;
         const updated = new Date();
         await this.feedModel.findOneAndUpdate({ _id: id }, { title, body, tag, updated }).exec();
