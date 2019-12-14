@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { IUser, IUserResponse, IUserSecurity, IUserAuthResponse, IGenericResponse } from './interface/users.interface';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -40,14 +40,18 @@ export class UsersService {
 
     async authenticate(email: string, password: string): Promise<IUserAuthResponse> {
         const result = await this.userSecurityModel.findOne({ email }).exec();
-        const { hash } = result || { hash: '' };
-        const hasValidHash = await comparePasswordHash({ password, hash });
-        const token = await createToken({ email, password });
-        return {
-            isAuthenticated: hasValidHash ? true : false,
-            token: hasValidHash ? token : null,
-            message: hasValidHash ? 'Login succeed' : 'Login failed!',
-        };
+        try {
+            const { hash } = result;
+            const hasValidHash = await comparePasswordHash({ password, hash });
+            const token = await createToken({ email, password });
+            return {
+                isAuthenticated: hasValidHash ? true : false,
+                token: hasValidHash ? token : null,
+                message: hasValidHash ? 'Login succeed' : 'Login failed!',
+            };
+        } catch (error) {
+            throw new UnauthorizedException(`Invalid Login for ${email}.`);
+        }
     }
 
     async updatePassword(email: string, password: string): Promise<IUserResponse> {
