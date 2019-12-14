@@ -1,10 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
-import { IUser, IUserResponse, IUserSecurity, IUserAuthResponse, IGenericResponse } from './interface/users.interface';
+import { IUser, IUserResponse } from './interface/users.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { CreateUserSecurityDto } from './dto/create-user-security.dts';
-import { createPIN, createPasswordHash, comparePasswordHash, createToken } from 'src/utils/password.util';
+import { createPIN, createPasswordHash } from 'src/utils/password.util';
+import { messageConstants } from 'src/constants';
+import { CreateUserSecurityDto } from '../auth/dto/create-user-security.dts';
+import { IUserSecurity } from '../auth/interface/auth.interface';
 
 @Injectable()
 export class UsersService {
@@ -13,9 +15,8 @@ export class UsersService {
 
     async create(user: CreateUserDto): Promise<IUserResponse> {
         const newUser = new this.userModel(user);
-        const newUserResult = await newUser.save();
-
-        if (newUserResult) {
+        try {
+            const newUserResult = await newUser.save();
             const { email } = user;
             const password = createPIN();
             const { hash } = await createPasswordHash({ password });
@@ -23,91 +24,73 @@ export class UsersService {
                 email,
                 hash,
             };
-            const newUserSecurity = new this.userSecurityModel(userSecurity);
-            await newUserSecurity.save();
-            return {
-                result: newUserResult,
-                success: true,
-                message: 'User created successfully!',
-            };
-        } else {
-            return {
-                success: false,
-                message: 'Unable to created user!',
-            };
-        }
-    }
-
-    async authenticate(email: string, password: string): Promise<IUserAuthResponse> {
-        const result = await this.userSecurityModel.findOne({ email }).exec();
-        try {
-            const { hash } = result;
-            const hasValidHash = await comparePasswordHash({ password, hash });
-            const token = await createToken({ email, password });
-            return {
-                isAuthenticated: hasValidHash ? true : false,
-                token: hasValidHash ? token : null,
-                message: hasValidHash ? 'Login succeed' : 'Login failed!',
-            };
+            try {
+                const newUserSecurity = new this.userSecurityModel(userSecurity);
+                await newUserSecurity.save();
+                return {
+                    result: newUserResult,
+                    success: true,
+                    message: messageConstants.REGISTRATION_SUCCESS,
+                };
+            } catch (error) {
+                throw new BadRequestException(error);
+            }
         } catch (error) {
-            throw new UnauthorizedException(`Invalid Login for ${email}.`);
+            throw new BadRequestException(messageConstants.REGISTRATION_FAILED);
         }
-    }
 
-    async updatePassword(email: string, password: string): Promise<IUserResponse> {
-        const { hash } = await createPasswordHash({ password });
-        await this.userSecurityModel.findOneAndUpdate({ email }, { hash }).exec();
-        return {
-            success: true,
-            message: 'Resource updated successfully',
-        };
-    }
-
-    async resetPassword(email: string): Promise<IGenericResponse> {
-        const password = createPIN();
-        const { hash } = await createPasswordHash({ password });
-        await this.userSecurityModel.findOneAndUpdate({ email }, { hash }).exec();
-        return {
-            result: password,
-            success: true,
-            message: 'Resource updated successfully',
-        };
     }
 
     async findAll(): Promise<IUserResponse> {
-        const result: IUser[] = await this.userModel.find().exec();
-        return {
-            result,
-            success: result.length ? true : false,
-            message: result.length ? 'Resource retrieved successfully' : 'Resource not found',
-        };
+        try {
+            const result: IUser[] = await this.userModel.find().exec();
+            return {
+                result,
+                success: result.length ? true : false,
+                message: messageConstants.FOUND,
+            };
+        } catch (error) {
+            throw new BadRequestException(error);
+        }
     }
 
     async findPaging(skip: number): Promise<IUserResponse> {
-        const result: IUser[] = await this.userModel.find().skip(skip).limit(20).exec();
-        return {
-            result,
-            success: result.length ? true : false,
-            message: result.length ? 'Resource retrieved successfully' : 'Resource not found',
-        };
+        try {
+            const result: IUser[] = await this.userModel.find().skip(skip).limit(20).exec();
+            return {
+                result,
+                success: result.length ? true : false,
+                message: messageConstants.FOUND,
+            };
+        } catch (error) {
+            throw new BadRequestException(error);
+        }
     }
 
     async findOneById(id: Types.ObjectId): Promise<IUserResponse> {
-        const result = await this.userModel.findOne({ _id: id }).exec();
-        return {
-            result: result ? result : {},
-            success: result ? true : false,
-            message: result ? 'Resource retrieved successfully' : 'Resource not found',
-        };
+        try {
+            const result = await this.userModel.findOne({ _id: id }).exec();
+            return {
+                result,
+                success: result ? true : false,
+                message: messageConstants.FOUND,
+            };
+        } catch (error) {
+            throw new BadRequestException(error);
+        }
     }
 
     async findOneByEmail(email: string): Promise<IUserResponse> {
-        const result = await this.userModel.findOne({ email }).exec();
-        return {
-            result: result ? result : {},
-            success: result ? true : false,
-            message: result ? 'Resource retrieved successfully' : 'Resource not found',
-        };
+        try {
+            const result = await this.userModel.findOne({ email }).exec();
+            return {
+                result,
+                success: result ? true : false,
+                message: messageConstants.FOUND,
+            };
+        } catch (error) {
+            throw new BadRequestException(error);
+        }
     }
 
     async isUserWithEmailExist(email: string): Promise<boolean> {
@@ -118,29 +101,29 @@ export class UsersService {
         return false;
     }
 
-    async isSecurityWithEmailExist(email: string): Promise<boolean> {
-        const result = await this.userSecurityModel.findOne({ email }).exec();
-        if (result) {
-            return true;
-        }
-        return false;
-    }
-
     async updateMobile(id: Types.ObjectId, mobile: string): Promise<IUserResponse> {
-        const result = await this.userModel.findOneAndUpdate({ _id: id }, { mobile }, { new: true }).exec();
-        return {
-            result,
-            success: true,
-            message: 'Resource updated successfully',
-        };
+        try {
+            const result = await this.userModel.findOneAndUpdate({ _id: id }, { mobile }, { new: true }).exec();
+            return {
+                result,
+                success: true,
+                message: messageConstants.UPDATED,
+            };
+        } catch (error) {
+            throw new BadRequestException(error);
+        }
     }
 
     async updateDisplayname(id: Types.ObjectId, displayname: string): Promise<IUserResponse> {
-        const result = await this.userModel.findOneAndUpdate({ _id: id }, { displayname }, { new: true }).exec();
-        return {
-            result,
-            success: true,
-            message: 'Resource updated successfully',
-        };
+        try {
+            const result = await this.userModel.findOneAndUpdate({ _id: id }, { displayname }, { new: true }).exec();
+            return {
+                result,
+                success: true,
+                message: messageConstants.UPDATED,
+            };
+        } catch (error) {
+            throw new BadRequestException(error);
+        }
     }
 }
