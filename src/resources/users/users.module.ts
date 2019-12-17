@@ -3,7 +3,6 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from './schemas/user.mongoose.schema';
-import { CreateUserMiddleware } from './middleware/create-user.middleware';
 import { ParamsUpdateUserMiddleware } from './middleware/params-update-user.middleware';
 import { UserSecuritySchema } from '../auth/schemas/security.mongoose.schema';
 import { TokenMiddleware } from 'src/middleware/token.middleware';
@@ -20,10 +19,6 @@ export class UsersModule implements NestModule {
             .apply(TokenMiddleware)
             .exclude({ path: 'users', method: RequestMethod.POST })
             .forRoutes(UsersController);
-
-        consumer
-            .apply(CreateUserMiddleware)
-            .forRoutes({ path: 'users', method: RequestMethod.POST });
 
         consumer
             .apply(ParamsUpdateUserMiddleware)
